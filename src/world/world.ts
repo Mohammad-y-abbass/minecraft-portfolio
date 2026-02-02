@@ -3,10 +3,10 @@ import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise.js";
 
 import { type WorldSize, type WorldData, BlockID } from "./types";
 import { RNG } from "./rng";
-import { blocks } from "./block";
+import { blocks, resources } from "./block";
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshLambertMaterial();
+
 
 export class World extends THREE.Group {
     size: WorldSize;
@@ -23,8 +23,12 @@ export class World extends THREE.Group {
         super();
         this.size = { width, height };
         this.data = [];
+        const rng = new RNG(this.params.seed);
+
         this.initTerrian();
-        this.generateTerrain();
+        this.generateTerrain(rng);
+        this.generateResources(rng);
+
         this.generateMeshes();
     }
 
@@ -89,8 +93,7 @@ export class World extends THREE.Group {
         }
     }
 
-    generateTerrain() {
-        const rng = new RNG(this.params.seed);
+    generateTerrain(rng: RNG) {
         const simplex = new SimplexNoise(rng);
         for (let x = 0; x < this.size.width; x++) {
             for (let z = 0; z < this.size.width; z++) {
@@ -103,35 +106,83 @@ export class World extends THREE.Group {
                 let height = Math.floor(this.size.height * scaledNoise);
                 height = Math.max(1, Math.min(height, this.size.height - 1));
                 for (let y = 0; y < this.size.height; y++) {
-                    y === height ? this.setBlockId(x, y, z, BlockID.Grass) : y <= height ? this.setBlockId(x, y, z, BlockID.Dirt) : this.setBlockId(x, y, z, BlockID.Empty);
+                    if (y < height && this.getBlock(x, y, z)?.id === BlockID.Empty) {
+                        this.setBlockId(x, y, z, BlockID.Dirt);
+                    } else if (y === height) {
+                        this.setBlockId(x, y, z, BlockID.Grass);
+                    } else if (y > height) {
+                        this.setBlockId(x, y, z, BlockID.Empty);
+                    }
                 }
 
             }
         }
     }
 
+
+    generateResources(rng: RNG) {
+        const simplex = new SimplexNoise(rng);
+
+        for (const res of resources) {
+            for (let x = 0; x < this.size.width; x++) {
+                for (let y = 0; y < this.size.height; y++) {
+                    for (let z = 0; z < this.size.width; z++) {
+                        const value = simplex.noise3d(x / blocks[res.id].scale.x, y / blocks[res.id].scale.y, z / blocks[res.id].scale.z);
+                        if (value > blocks[res.id].scarsity && this.getBlock(x, y, z)?.id === res.target) {
+                            this.setBlockId(x, y, z, res.id);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     generateMeshes() {
         this.clear();
-        const MAX_BLOCKS = this.size.width * this.size.height * this.size.width;
-        const mesh = new THREE.InstancedMesh(geometry, material, MAX_BLOCKS);
-        mesh.count = 0
+        const maxCount = this.size.width * this.size.height * this.size.width;
+
+        // Group blocks by ID
+        const meshes: { [key: number]: THREE.InstancedMesh } = {};
+
+        Object.values(BlockID).forEach(blockId => {
+            const blockConfig = blocks[blockId as BlockID];
+            if (blockId === BlockID.Empty || !blockConfig) return;
+
+            // We use a high max count for simplicity, though optimization would calculate exact counts
+            const mesh = new THREE.InstancedMesh(geometry, blockConfig.materials as THREE.Material, maxCount);
+            mesh.count = 0;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            meshes[blockId] = mesh;
+        });
 
         const matrix = new THREE.Matrix4();
         for (let x = 0; x < this.size.width; x++) {
             for (let y = 0; y < this.size.height; y++) {
                 for (let z = 0; z < this.size.width; z++) {
                     const blockId = this.getBlock(x, y, z)?.id;
-                    const instanceId = mesh.count;
-                    if (blockId !== 0 && !this.isBlockObscured(x, y, z)) {
-                        matrix.setPosition(x, y, z);
-                        mesh.setMatrixAt(instanceId, matrix);
-                        mesh.setColorAt(instanceId, new THREE.Color(blocks[blockId as BlockID].color));
-                        this.setBlockInstanceId(x, y, z, instanceId);
-                        mesh.count++;
+                    if (blockId === BlockID.Empty || blockId === undefined) continue;
+
+                    if (!this.isBlockObscured(x, y, z)) {
+                        const mesh = meshes[blockId];
+                        if (mesh) {
+                            const instanceId = mesh.count;
+                            matrix.setPosition(x, y, z);
+                            mesh.setMatrixAt(instanceId, matrix);
+                            // mesh.setColorAt(instanceId, new THREE.Color(blocks[blockId].color)); // Color is now handled by texture/material
+                            this.setBlockInstanceId(x, y, z, instanceId);
+                            mesh.count++;
+                        }
                     }
                 }
             }
         }
-        this.add(mesh);
+
+        // Add meshes to scene
+        Object.values(meshes).forEach(mesh => {
+            if (mesh.count > 0) {
+                this.add(mesh);
+            }
+        });
     }
 }
