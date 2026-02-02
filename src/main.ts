@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { World } from "./world/world";
 
 
 const renderer = new THREE.WebGLRenderer();
@@ -17,11 +18,8 @@ controls.target.set(16, 0, 16);
 controls.update();
 
 const scene = new THREE.Scene();
-
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+const world = new World();
+scene.add(world);
 
 
 function setupLights() {
@@ -38,25 +36,10 @@ function setupLights() {
   scene.add(light3);
 }
 
-function setupWorld() {
-  for (let i = 0; i < 32; i++) {
-    for (let j = 0; j < 32; j++) {
-
-
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-      const cube = new THREE.Mesh(geometry, material);
-      cube.position.set(i, 0, j)
-      scene.add(cube);
-    }
-  }
-}
 
 
 function animate() {
   requestAnimationFrame(animate);
-  // cube.rotation.x += 0.01;
-  // cube.rotation.y += 0.01;
   renderer.render(scene, camera);
 }
 
@@ -66,5 +49,4 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 setupLights();
-setupWorld();
 animate();
