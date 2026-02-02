@@ -73,7 +73,7 @@ export class World extends THREE.Group {
 
     generateTerrain() {
         const rng = new RNG(this.params.seed);
-        const simplex = new SimplexNoise();
+        const simplex = new SimplexNoise(rng);
         for (let x = 0; x < this.size.width; x++) {
             for (let z = 0; z < this.size.width; z++) {
                 const value = simplex.noise(

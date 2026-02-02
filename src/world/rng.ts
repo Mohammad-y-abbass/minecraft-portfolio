@@ -11,6 +11,7 @@ export class RNG {
     random() {
         this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & this.mask;
         this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & this.mask;
-        return ((this.m_z << 16) + this.m_w) / 4294967296;
+        const result = (this.m_z << 16) + this.m_w;
+        return (result >>> 0) / 4294967296;
     }
 }
