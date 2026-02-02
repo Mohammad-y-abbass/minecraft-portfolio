@@ -1,0 +1,20 @@
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
+import { World } from '../world/world';
+
+export function createGUI(world: World) {
+    const gui = new GUI();
+    gui.add(world.size, 'width', 1, 128, 1);
+    gui.add(world.size, 'height', 1, 64, 1);
+
+    const terrainFolder = gui.addFolder('Terrain');
+    terrainFolder.add(world.params, 'seed', 0, 1000);
+    terrainFolder.add(world.params.terrian, 'scale', 10, 100, 0.1);
+    terrainFolder.add(world.params.terrian, 'magnitude', 0, 1, 0.01);
+    terrainFolder.add(world.params.terrian, 'offset', 0, 1, 0.01);
+
+    gui.onChange(() => {
+        world.initTerrian();
+        world.generateTerrain()
+        world.generateMeshes();
+    });
+}

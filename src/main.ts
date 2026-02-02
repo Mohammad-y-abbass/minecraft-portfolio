@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { World } from "./world/world";
 import Stats from "three/examples/jsm/libs/stats.module.js";
+import { createGUI } from "./ui/gui";
 
 
 const renderer = new THREE.WebGLRenderer();
@@ -52,4 +53,5 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 setupLights();
+createGUI(world);
 animate();
