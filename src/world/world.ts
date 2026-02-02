@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { SimplexNoise } from "three/examples/jsm/math/SimplexNoise.js";
 
-import type { WorldSize, WorldData } from "./types";
+import { type WorldSize, type WorldData, BlockID } from "./types";
 import { RNG } from "./rng";
+import { blocks } from "./block";
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+const material = new THREE.MeshLambertMaterial();
 
 export class World extends THREE.Group {
     size: WorldSize;
@@ -55,6 +56,23 @@ export class World extends THREE.Group {
     }
 
 
+    isBlockObscured(x: number, y: number, z: number) {
+        const upperBlock = this.getBlock(x, y + 1, z)?.id ?? BlockID.Empty;
+        const lowerBlock = this.getBlock(x, y - 1, z)?.id ?? BlockID.Empty;
+        const leftBlock = this.getBlock(x - 1, y, z)?.id ?? BlockID.Empty;
+        const rightBlock = this.getBlock(x + 1, y, z)?.id ?? BlockID.Empty;
+        const frontBlock = this.getBlock(x, y, z - 1)?.id ?? BlockID.Empty;
+        const backBlock = this.getBlock(x, y, z + 1)?.id ?? BlockID.Empty;
+        return (
+            upperBlock !== BlockID.Empty &&
+            lowerBlock !== BlockID.Empty &&
+            leftBlock !== BlockID.Empty &&
+            rightBlock !== BlockID.Empty &&
+            frontBlock !== BlockID.Empty &&
+            backBlock !== BlockID.Empty
+        );
+    }
+
 
     initTerrian() {
         this.data = [];
@@ -63,7 +81,7 @@ export class World extends THREE.Group {
             for (let y = 0; y < this.size.height; y++) {
                 const row: WorldData[] = [];
                 for (let z = 0; z < this.size.width; z++) {
-                    row.push({ id: 0, instanceId: null });
+                    row.push({ id: BlockID.Empty, instanceId: null });
                 }
                 slice.push(row);
             }
@@ -84,8 +102,8 @@ export class World extends THREE.Group {
                 const scaledNoise = value * this.params.terrian.magnitude + this.params.terrian.offset;
                 let height = Math.floor(this.size.height * scaledNoise);
                 height = Math.max(1, Math.min(height, this.size.height - 1));
-                for (let y = 0; y < height; y++) {
-                    this.setBlockId(x, y, z, 1);
+                for (let y = 0; y < this.size.height; y++) {
+                    y === height ? this.setBlockId(x, y, z, BlockID.Grass) : y <= height ? this.setBlockId(x, y, z, BlockID.Dirt) : this.setBlockId(x, y, z, BlockID.Empty);
                 }
 
             }
@@ -104,9 +122,10 @@ export class World extends THREE.Group {
                 for (let z = 0; z < this.size.width; z++) {
                     const blockId = this.getBlock(x, y, z)?.id;
                     const instanceId = mesh.count;
-                    if (blockId !== 0) {
+                    if (blockId !== 0 && !this.isBlockObscured(x, y, z)) {
                         matrix.setPosition(x, y, z);
                         mesh.setMatrixAt(instanceId, matrix);
+                        mesh.setColorAt(instanceId, new THREE.Color(blocks[blockId as BlockID].color));
                         this.setBlockInstanceId(x, y, z, instanceId);
                         mesh.count++;
                     }
