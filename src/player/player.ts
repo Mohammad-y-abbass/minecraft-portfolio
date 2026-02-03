@@ -4,7 +4,6 @@ import {
     Scene,
     Vector3,
     Box3,
-    Box3Helper,
     Raycaster,
     Vector2
 } from "three";
@@ -29,7 +28,7 @@ export class Player {
     direction = new Vector3();
     onGround = false;
     bounds = new Box3();
-    boundsHelper = new Box3Helper(this.bounds, 0xffff00);
+    // boundsHelper = new Box3Helper(this.bounds, 0xffff00);
 
     moveForward = false;
     moveBackward = false;
@@ -72,7 +71,7 @@ export class Player {
 
         this.camera.position.set(10, 15, 10);
         scene.add(this.camera);
-        scene.add(this.boundsHelper);
+        // scene.add(this.boundsHelper);
 
         // Selection Helper (wireframe)
         const selectionGeometry = new THREE.BoxGeometry(1.01, 1.01, 1.01);
