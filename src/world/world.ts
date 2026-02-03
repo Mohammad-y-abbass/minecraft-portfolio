@@ -53,6 +53,7 @@ export class World extends THREE.Group {
         const chunk = new Chunk(x, z, this.size, this.params);
         chunk.generateTerrain(rng);
         chunk.generateResources(rng);
+        chunk.generateClouds(rng);
         chunk.generateMeshes();
         this.add(chunk);
         this.chunks.set(key, chunk);
@@ -74,5 +75,25 @@ export class World extends THREE.Group {
 
     isSolid(x: number, y: number, z: number) {
         return this.getBlock(x, y, z)?.id !== BlockID.Empty;
+    }
+
+    setBlock(x: number, y: number, z: number, id: number) {
+        const chunkX = Math.floor(x / this.size.width);
+        const chunkZ = Math.floor(z / this.size.width);
+        const key = `${chunkX},${chunkZ}`;
+        const chunk = this.chunks.get(key);
+
+        if (chunk) {
+            const localX = ((x % this.size.width) + this.size.width) % this.size.width;
+            const localZ = ((z % this.size.width) + this.size.width) % this.size.width;
+            chunk.setBlockId(localX, y, localZ, id);
+            chunk.generateMeshes();
+
+            // Handle neighboring chunks if on boundary
+            if (localX === 0) this.chunks.get(`${chunkX - 1},${chunkZ}`)?.generateMeshes();
+            if (localX === this.size.width - 1) this.chunks.get(`${chunkX + 1},${chunkZ}`)?.generateMeshes();
+            if (localZ === 0) this.chunks.get(`${chunkX},${chunkZ - 1}`)?.generateMeshes();
+            if (localZ === this.size.width - 1) this.chunks.get(`${chunkX},${chunkZ + 1}`)?.generateMeshes();
+        }
     }
 }

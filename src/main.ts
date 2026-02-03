@@ -14,7 +14,7 @@ const scene = new Scene();
 const world = new World({ width: 16, height: 32 });
 scene.add(world);
 
-const player = new Player(scene);
+const player = new Player(scene, world);
 
 const physics = new Physics();
 

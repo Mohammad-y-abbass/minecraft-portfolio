@@ -18,6 +18,9 @@ const textures = {
     stone: loadTexture("textures/stone.png"),
     coal: loadTexture("textures/coal_ore.png"),
     iron: loadTexture("textures/iron_ore.png"),
+    wood: loadTexture("textures/tree_side.png"),
+    wood_top: loadTexture("textures/tree_top.png"),
+    leaves: loadTexture("textures/leaves.png"),
 }
 
 export const blocks = {
@@ -36,6 +39,18 @@ export const blocks = {
     [BlockID.Stone]: { name: "Stone", color: 0x808080, scale: { x: 30, y: 30, z: 30 }, scarsity: 0.5, materials: new THREE.MeshStandardMaterial({ map: textures.stone }) },
     [BlockID.Coal]: { name: "Coal", color: 0x000000, scale: { x: 20, y: 20, z: 20 }, scarsity: 0.7, materials: new THREE.MeshStandardMaterial({ map: textures.coal }) },
     [BlockID.Iron]: { name: "Iron", color: 0x808080, scale: { x: 60, y: 60, z: 60 }, scarsity: 0.9, materials: new THREE.MeshStandardMaterial({ map: textures.iron }) },
+    [BlockID.Wood]: {
+        name: "Wood", color: 0x5d4037, materials: [
+            new THREE.MeshStandardMaterial({ map: textures.wood }),
+            new THREE.MeshStandardMaterial({ map: textures.wood }),
+            new THREE.MeshStandardMaterial({ map: textures.wood_top }),
+            new THREE.MeshStandardMaterial({ map: textures.wood_top }),
+            new THREE.MeshStandardMaterial({ map: textures.wood }),
+            new THREE.MeshStandardMaterial({ map: textures.wood }),
+        ]
+    },
+    [BlockID.Leaves]: { name: "Leaves", color: 0x00ff00, materials: new THREE.MeshStandardMaterial({ map: textures.leaves, transparent: true, alphaTest: 0.5 }) },
+    [BlockID.Cloud]: { name: "Cloud", color: 0xffffff, materials: new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 }) },
 } as const;
 
 export const resources = [

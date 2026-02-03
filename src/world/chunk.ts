@@ -58,8 +58,72 @@ export class Chunk extends THREE.Group {
                         this.setBlockId(x, y, z, BlockID.Dirt);
                     } else if (y === height) {
                         this.setBlockId(x, y, z, BlockID.Grass);
-                    } else {
+
+                        // Randomly grow a tree
+                        if (rng.random() < 0.02) {
+                            this.generateTree(x, y + 1, z, rng);
+                        }
+                    } else if (this.getBlock(x, y, z)?.id === BlockID.Empty) {
                         this.setBlockId(x, y, z, BlockID.Empty);
+                    }
+                }
+            }
+        }
+    }
+
+    generateTree(x: number, y: number, z: number, rng: RNG) {
+        const treeHeight = 4 + Math.floor(rng.random() * 3);
+
+        // Trunk
+        for (let i = 0; i < treeHeight; i++) {
+            this.setBlockId(x, y + i, z, BlockID.Wood);
+        }
+
+        // Canopy
+        const canopyHeight = 2;
+        const canopyRadius = 2;
+
+        for (let cy = 0; cy < canopyHeight; cy++) {
+            for (let cx = -canopyRadius; cx <= canopyRadius; cx++) {
+                for (let cz = -canopyRadius; cz <= canopyRadius; cz++) {
+                    const lx = x + cx;
+                    const ly = y + treeHeight - canopyHeight + cy;
+                    const lz = z + cz;
+
+                    // Skip the trunk and round the corners
+                    if (cx === 0 && cz === 0 && cy < canopyHeight - 1) continue;
+                    if (Math.abs(cx) === canopyRadius && Math.abs(cz) === canopyRadius && rng.random() < 0.5) continue;
+
+                    if (this.getBlock(lx, ly, lz)?.id === BlockID.Empty) {
+                        this.setBlockId(lx, ly, lz, BlockID.Leaves);
+                    }
+                }
+            }
+        }
+    }
+
+    generateClouds(rng: RNG) {
+        const simplex = new SimplexNoise(rng);
+        const cloudHeight = this.size.height - 6;
+        const cloudScale = 20;
+        const cloudThreshold = 0.5;
+
+        for (let x = 0; x < this.size.width; x++) {
+            for (let z = 0; z < this.size.width; z++) {
+                const worldX = this.positionInWorld.x * this.size.width + x;
+                const worldZ = this.positionInWorld.z * this.size.width + z;
+
+                const value = simplex.noise(
+                    worldX / cloudScale,
+                    worldZ / cloudScale
+                );
+
+                if (value > cloudThreshold) {
+                    this.setBlockId(x, cloudHeight, z, BlockID.Cloud);
+
+                    // Add some thickness
+                    if (rng.random() > 0.5) {
+                        this.setBlockId(x, cloudHeight - 1, z, BlockID.Cloud);
                     }
                 }
             }
