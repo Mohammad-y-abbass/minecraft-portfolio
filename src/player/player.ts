@@ -51,7 +51,13 @@ export class Player {
     swingTimer = 0;
     swingDuration = 0.3;
 
-    // Idle position for the axe
+    // Mobile support
+    isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    lookSensitivity = 0.002;
+    rotationX = 0;
+    rotationY = 0;
+
+    // Axe properties
     axeIdlePos = new Vector3(0.4, -0.4, -0.6);
     axeIdleRot = new THREE.Euler(-Math.PI / 3, Math.PI / 4, 0);
 
@@ -182,16 +188,22 @@ export class Player {
         this.updateRaycasting();
         this.updateAxeAnimation(delta);
 
-        // Reset horizontal direction
+        // Movement logic
         this.direction.set(0, 0, 0);
 
         const forward = new Vector3();
         const right = new Vector3();
 
-        this.camera.getWorldDirection(forward);
+        if (this.controls.isLocked) {
+            this.camera.getWorldDirection(forward);
+        } else if (this.isTouchDevice) {
+            // Manual rotation for touch
+            this.camera.rotation.set(this.rotationX, this.rotationY, 0, 'YXZ');
+            this.camera.getWorldDirection(forward);
+        }
+
         forward.y = 0;
         forward.normalize();
-
         right.crossVectors(forward, new Vector3(0, 1, 0)).normalize();
 
         if (this.moveForward) this.direction.add(forward);

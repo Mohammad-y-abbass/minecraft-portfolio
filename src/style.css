@@ -83,3 +83,59 @@ body {
   transform: scale(1.05);
   color: #aaffaa;
 }
+
+/* Mobile Controls */
+#joystick-container {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  width: 100px;
+  height: 100px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  z-index: 150;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+}
+
+#joystick {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+#mobile-buttons {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 150;
+}
+
+.mobile-btn {
+  width: 70px;
+  height: 70px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 12px;
+  touch-action: none;
+  user-select: none;
+}
+
+.mobile-btn:active {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+}

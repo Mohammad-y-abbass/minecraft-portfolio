@@ -7,6 +7,7 @@ import { Scene } from "three";
 import { Player } from "./player/player";
 import { Physics } from "./core/physics";
 import { setupInstructions } from "./ui/instructions";
+import { setupMobileControls } from "./ui/mobileControls";
 
 const renderer = createRenderer();
 
@@ -46,5 +47,6 @@ window.addEventListener("resize", () => {
 
 setupLights(scene);
 createGUI(world, player);
-setupInstructions();
+setupInstructions(player);
+setupMobileControls(player);
 animate();
