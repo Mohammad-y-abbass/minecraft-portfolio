@@ -53,7 +53,7 @@ export class Player {
 
     // Mobile support
     isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    lookSensitivity = 0.002;
+    lookSensitivity = 0.005;
     rotationX = 0;
     rotationY = 0;
 

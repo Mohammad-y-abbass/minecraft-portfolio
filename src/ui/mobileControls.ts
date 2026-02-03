@@ -24,6 +24,7 @@ export function setupMobileControls(player: Player) {
         btn.innerHTML = label;
         btn.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             callback();
         });
         buttonsContainer.appendChild(btn);
@@ -51,8 +52,15 @@ export function setupMobileControls(player: Player) {
     let isDraggingJoystick = false;
     const maxDistance = 40;
 
-    joystickContainer.addEventListener('touchstart', () => {
+    window.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        (window as any).lastTouchX = touch.clientX;
+        (window as any).lastTouchY = touch.clientY;
+    });
+
+    joystickContainer.addEventListener('touchstart', (e) => {
         isDraggingJoystick = true;
+        e.stopPropagation(); // Prevent look initialization from fighting joystick start
     });
 
     const updateMovement = (touch: Touch) => {
@@ -77,21 +85,26 @@ export function setupMobileControls(player: Player) {
         player.moveRight = tx > deadzone;
     };
 
-    window.addEventListener('touchmove', (e) => {
-        if (isDraggingJoystick) {
-            updateMovement(e.touches[0]);
-        } else {
-            // Drag to look logic
-            const touch = e.touches[0];
-            const movementX = touch.clientX - (window as any).lastTouchX || 0;
-            const movementY = touch.clientY - (window as any).lastTouchY || 0;
+    window.addEventListener('touchmove', (e: TouchEvent) => {
+        for (let i = 0; i < e.touches.length; i++) {
+            const touch = e.touches[i];
 
-            player.rotationY -= movementX * player.lookSensitivity;
-            player.rotationX -= movementY * player.lookSensitivity;
-            player.rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotationX));
+            // If this touch is for the joystick
+            if (isDraggingJoystick && (touch.target === joystickContainer || touch.target === joystick)) {
+                updateMovement(touch);
+            } else {
+                // This is a look touch (or a new touch that isn't the joystick)
+                // We only process look for the first touch that isn't the joystick
+                const movementX = touch.clientX - ((window as any).lastTouchX || touch.clientX);
+                const movementY = touch.clientY - ((window as any).lastTouchY || touch.clientY);
 
-            (window as any).lastTouchX = touch.clientX;
-            (window as any).lastTouchY = touch.clientY;
+                player.rotationY -= movementX * player.lookSensitivity;
+                player.rotationX -= movementY * player.lookSensitivity;
+                player.rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotationX));
+
+                (window as any).lastTouchX = touch.clientX;
+                (window as any).lastTouchY = touch.clientY;
+            }
         }
     }, { passive: false });
 
