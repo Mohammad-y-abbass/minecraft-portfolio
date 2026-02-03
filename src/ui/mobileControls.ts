@@ -48,19 +48,33 @@ export function setupMobileControls(player: Player) {
         player.onMouseDown(event);
     });
 
-    // Joystick Logic
-    let isDraggingJoystick = false;
+    // Touch Tracking
+    let joystickTouchId: number | null = null;
+    let lookTouchId: number | null = null;
+    let lastLookX: number | null = null;
+    let lastLookY: number | null = null;
     const maxDistance = 40;
 
-    window.addEventListener('touchstart', (e) => {
-        const touch = e.touches[0];
-        (window as any).lastTouchX = touch.clientX;
-        (window as any).lastTouchY = touch.clientY;
+    joystickContainer.addEventListener('touchstart', (e) => {
+        if (joystickTouchId !== null) return;
+        const touch = e.changedTouches[0];
+        joystickTouchId = touch.identifier;
+        e.stopPropagation();
     });
 
-    joystickContainer.addEventListener('touchstart', (e) => {
-        isDraggingJoystick = true;
-        e.stopPropagation(); // Prevent look initialization from fighting joystick start
+    window.addEventListener('touchstart', (e) => {
+        // Find the first touch that isn't the joystick and isn't already looking
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
+            if (touch.identifier !== joystickTouchId && lookTouchId === null) {
+                // If it's not starting on a mobile button (those stop propagation)
+                if (!(touch.target as HTMLElement).classList.contains('mobile-btn')) {
+                    lookTouchId = touch.identifier;
+                    lastLookX = touch.clientX;
+                    lastLookY = touch.clientY;
+                }
+            }
+        }
     });
 
     const updateMovement = (touch: Touch) => {
@@ -77,7 +91,6 @@ export function setupMobileControls(player: Player) {
         const ty = Math.sin(angle) * distance;
         joystick.style.transform = `translate(${tx}px, ${ty}px)`;
 
-        // Update player movement flags
         const deadzone = 10;
         player.moveForward = ty < -deadzone;
         player.moveBackward = ty > deadzone;
@@ -89,35 +102,40 @@ export function setupMobileControls(player: Player) {
         for (let i = 0; i < e.touches.length; i++) {
             const touch = e.touches[i];
 
-            // If this touch is for the joystick
-            if (isDraggingJoystick && (touch.target === joystickContainer || touch.target === joystick)) {
+            if (touch.identifier === joystickTouchId) {
                 updateMovement(touch);
-            } else {
-                // This is a look touch (or a new touch that isn't the joystick)
-                // We only process look for the first touch that isn't the joystick
-                const movementX = touch.clientX - ((window as any).lastTouchX || touch.clientX);
-                const movementY = touch.clientY - ((window as any).lastTouchY || touch.clientY);
+            } else if (touch.identifier === lookTouchId) {
+                const movementX = touch.clientX - (lastLookX ?? touch.clientX);
+                const movementY = touch.clientY - (lastLookY ?? touch.clientY);
 
                 player.rotationY -= movementX * player.lookSensitivity;
                 player.rotationX -= movementY * player.lookSensitivity;
                 player.rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotationX));
 
-                (window as any).lastTouchX = touch.clientX;
-                (window as any).lastTouchY = touch.clientY;
+                lastLookX = touch.clientX;
+                lastLookY = touch.clientY;
             }
         }
     }, { passive: false });
 
-    window.addEventListener('touchend', () => {
-        if (isDraggingJoystick) {
-            isDraggingJoystick = false;
-            joystick.style.transform = `translate(0px, 0px)`;
-            player.moveForward = false;
-            player.moveBackward = false;
-            player.moveLeft = false;
-            player.moveRight = false;
+    const handleTouchEnd = (e: TouchEvent) => {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
+            if (touch.identifier === joystickTouchId) {
+                joystickTouchId = null;
+                joystick.style.transform = `translate(0px, 0px)`;
+                player.moveForward = false;
+                player.moveBackward = false;
+                player.moveLeft = false;
+                player.moveRight = false;
+            } else if (touch.identifier === lookTouchId) {
+                lookTouchId = null;
+                lastLookX = null;
+                lastLookY = null;
+            }
         }
-        (window as any).lastTouchX = null;
-        (window as any).lastTouchY = null;
-    });
+    };
+
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
 }
