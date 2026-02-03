@@ -137,6 +137,10 @@ export class World extends THREE.Group {
         }
     }
 
+    isSolid(x: number, y: number, z: number) {
+        return this.getBlock(x, y, z)?.id !== BlockID.Empty;
+    }
+
     generateMeshes() {
         this.clear();
         const maxCount = this.size.width * this.size.height * this.size.width;
@@ -156,6 +160,12 @@ export class World extends THREE.Group {
             meshes[blockId] = mesh;
         });
 
+        // Add an instanced mesh for the block helpers (wireframe bounds)
+        const helperMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+        const helperMesh = new THREE.InstancedMesh(geometry, helperMaterial, maxCount);
+        helperMesh.count = 0;
+        this.add(helperMesh);
+
         const matrix = new THREE.Matrix4();
         for (let x = 0; x < this.size.width; x++) {
             for (let y = 0; y < this.size.height; y++) {
@@ -167,11 +177,17 @@ export class World extends THREE.Group {
                         const mesh = meshes[blockId];
                         if (mesh) {
                             const instanceId = mesh.count;
-                            matrix.setPosition(x, y, z);
+                            // Offset by 0.5 so the centered BoxGeometry aligns with
+                            // the integer-grid collision that isSolid/physics uses.
+                            // Block (x,y,z) occupies [x, x+1] x [y, y+1] x [z, z+1],
+                            // so its visual center must be at (x+0.5, y+0.5, z+0.5).
+                            matrix.setPosition(x + 0.5, y + 0.5, z + 0.5);
                             mesh.setMatrixAt(instanceId, matrix);
-                            // mesh.setColorAt(instanceId, new THREE.Color(blocks[blockId].color)); // Color is now handled by texture/material
                             this.setBlockInstanceId(x, y, z, instanceId);
                             mesh.count++;
+
+                            // Update helper mesh
+                            helperMesh.setMatrixAt(helperMesh.count++, matrix);
                         }
                     }
                 }

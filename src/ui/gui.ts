@@ -4,7 +4,10 @@ import { RNG } from '../world/rng';
 import { blocks, resources } from '../world/block';
 
 
-export function createGUI(world: World) {
+import { Player } from '../player/player';
+
+
+export function createGUI(world: World, player: Player) {
     const gui = new GUI();
     gui.add(world.size, 'width', 1, 128, 1);
     gui.add(world.size, 'height', 1, 64, 1);
@@ -14,6 +17,17 @@ export function createGUI(world: World) {
     terrainFolder.add(world.params.terrian, 'scale', 10, 100, 0.1);
     terrainFolder.add(world.params.terrian, 'magnitude', 0, 1, 0.01);
     terrainFolder.add(world.params.terrian, 'offset', 0, 1, 0.01);
+
+    const playerFolder = gui.addFolder('Player');
+    playerFolder.add(player, 'maxSpeed', 1, 20, 0.1).name('Max Speed');
+    playerFolder.add(player, 'acceleration', 1, 100, 1).name('Acceleration');
+    playerFolder.add(player, 'jumpForce', 1, 20, 0.1).name('Jump Force');
+    playerFolder.add(player, 'gravity', 1, 50, 0.1).name('Gravity');
+    playerFolder.add(player, 'friction', 1, 20, 0.1).name('Friction');
+    playerFolder.add(player, 'width', 0.1, 2, 0.1).name('Width');
+    playerFolder.add(player, 'height', 0.5, 4, 0.1).name('Height');
+    playerFolder.add(player, 'eyeHeight', 0.1, 4, 0.1).name('Eye Height');
+    playerFolder.add(player.boundsHelper, 'visible').name('Show Bounds');
 
     const scaleFolder = gui.addFolder('Scale');
     resources.forEach(resource => {

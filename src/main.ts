@@ -5,6 +5,7 @@ import { createRenderer } from "./core/renderer";
 import { setupLights } from "./core/light";
 import { Scene } from "three";
 import { Player } from "./player/player";
+import { Physics } from "./core/physics";
 
 const renderer = createRenderer();
 
@@ -14,6 +15,8 @@ const world = new World({ width: 32, height: 16 });
 scene.add(world);
 
 const player = new Player(scene);
+
+const physics = new Physics();
 
 const stats = new Stats();
 document.body.appendChild(stats.dom);
@@ -27,6 +30,7 @@ function animate() {
   const deltaTime = (currentTime - previousTime) / 1000;
   previousTime = currentTime;
   player.update(deltaTime);
+  physics.update(deltaTime, player, world);
   renderer.render(scene, player.camera);
   stats.update();
 }
@@ -37,5 +41,5 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 setupLights(scene);
-createGUI(world);
+createGUI(world, player);
 animate();
