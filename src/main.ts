@@ -1,6 +1,6 @@
 import { World } from "./world/world";
 import Stats from "three/examples/jsm/libs/stats.module.js";
-import { createGUI } from "./ui/gui";
+// import { createGUI } from "./ui/gui";
 import { createRenderer } from "./core/renderer";
 import { setupLights } from "./core/light";
 import { Scene } from "three";
@@ -46,7 +46,7 @@ window.addEventListener("resize", () => {
 });
 
 setupLights(scene);
-createGUI(world, player);
+// createGUI(world, player);
 setupInstructions(player);
 setupMobileControls(player);
 animate();
