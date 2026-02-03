@@ -11,7 +11,7 @@ const renderer = createRenderer();
 
 
 const scene = new Scene();
-const world = new World({ width: 32, height: 16 });
+const world = new World({ width: 16, height: 32 });
 scene.add(world);
 
 const player = new Player(scene);
@@ -29,6 +29,8 @@ function animate() {
   const currentTime = performance.now();
   const deltaTime = (currentTime - previousTime) / 1000;
   previousTime = currentTime;
+
+  world.update(player.position);
   player.update(deltaTime);
   physics.update(deltaTime, player, world);
   renderer.render(scene, player.camera);

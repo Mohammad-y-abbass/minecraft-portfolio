@@ -1,6 +1,5 @@
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 import { World } from '../world/world';
-import { RNG } from '../world/rng';
 import { blocks, resources } from '../world/block';
 
 
@@ -43,9 +42,8 @@ export function createGUI(world: World, player: Player) {
     });
 
     gui.onChange(() => {
-        world.initTerrian();
-        world.generateTerrain(new RNG(world.params.seed));
-        world.generateResources(new RNG(world.params.seed));
-        world.generateMeshes();
+        world.chunks.forEach(chunk => world.remove(chunk));
+        world.chunks.clear();
+        world.update(player.position);
     });
 }
