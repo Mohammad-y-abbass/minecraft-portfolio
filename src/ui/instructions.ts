@@ -14,12 +14,7 @@ export function setupInstructions(player?: Player) {
     instructions.id = 'instructions';
 
     if (isTouch) {
-        instructions.innerHTML = `
-            <div class="instruction-title">TOUCH CONTROLS</div>
-            <div class="instruction-item"><span>JOYSTICK</span> Move</div>
-            <div class="instruction-item"><span>DRAG SCREEN</span> Look</div>
-            <div class="instruction-item"><span>BUTTONS</span> Jump / Build / Mine</div>
-        `;
+        // No instruction panel on touch devices
     } else {
         instructions.innerHTML = `
             <div class="instruction-title">CONTROLS</div>
@@ -29,9 +24,8 @@ export function setupInstructions(player?: Player) {
             <div class="instruction-item"><span>RIGHT CLICK</span> Build / Place</div>
             <div class="instruction-item"><span>MOUSE</span> Look</div>
         `;
+        document.body.appendChild(instructions);
     }
-
-    document.body.appendChild(instructions);
 
     // Click to Start Overlay
     const startOverlay = document.createElement('div');

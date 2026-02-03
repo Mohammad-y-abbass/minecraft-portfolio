@@ -178,8 +178,7 @@ export class Player {
     // ============================
 
     update(delta: number) {
-
-        if (!this.controls.isLocked) {
+        if (!this.controls.isLocked && !this.isTouchDevice) {
             this.selectionHelper.visible = false;
             this.placementHelper.visible = false;
             return;
@@ -308,7 +307,7 @@ export class Player {
     }
 
     onMouseDown(event: MouseEvent) {
-        if (!this.controls.isLocked) return;
+        if (!this.controls.isLocked && !this.isTouchDevice) return;
 
         this.isSwinging = true;
         this.swingTimer = 0;
