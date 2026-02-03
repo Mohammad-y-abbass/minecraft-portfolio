@@ -6,6 +6,7 @@ import { setupLights } from "./core/light";
 import { Scene } from "three";
 import { Player } from "./player/player";
 import { Physics } from "./core/physics";
+import { setupInstructions } from "./ui/instructions";
 
 const renderer = createRenderer();
 
@@ -42,6 +43,8 @@ window.addEventListener("resize", () => {
   player.camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
 setupLights(scene);
 createGUI(world, player);
+setupInstructions();
 animate();
