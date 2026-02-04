@@ -37,6 +37,24 @@ export class Chunk extends THREE.Group {
         }
     }
 
+    isNearSpawn(x: number, z: number) {
+        // Protected radius of 32 blocks (2 chunks)
+        const dist = Math.sqrt(x * x + z * z);
+        return dist < 32;
+    }
+
+    getGroundHeight(worldX: number, worldZ: number) {
+        const x = ((worldX % this.size.width) + this.size.width) % this.size.width;
+        const z = ((worldZ % this.size.width) + this.size.width) % this.size.width;
+
+        for (let y = this.size.height - 1; y >= 0; y--) {
+            if (this.data[x][y][z].id !== BlockID.Empty) {
+                return y + 1;
+            }
+        }
+        return 0;
+    }
+
     generateTerrain(rng: RNG) {
         const simplex = new SimplexNoise(rng);
         for (let x = 0; x < this.size.width; x++) {
@@ -51,7 +69,13 @@ export class Chunk extends THREE.Group {
 
                 const scaledNoise = value * this.params.terrian.magnitude + this.params.terrian.offset;
                 let height = Math.floor(this.size.height * scaledNoise);
-                height = Math.max(1, Math.min(height, this.size.height - 1));
+
+                // Protected spawn area
+                if (this.isNearSpawn(worldX, worldZ)) {
+                    height = 10; // Fixed flat height
+                } else {
+                    height = Math.max(1, Math.min(height, this.size.height - 1));
+                }
 
                 for (let y = 0; y < this.size.height; y++) {
                     if (y < height) {
@@ -59,8 +83,8 @@ export class Chunk extends THREE.Group {
                     } else if (y === height) {
                         this.setBlockId(x, y, z, BlockID.Grass);
 
-                        // Randomly grow a tree
-                        if (rng.random() < 0.02) {
+                        // Randomly grow a tree - only if NOT near spawn
+                        if (rng.random() < 0.02 && !this.isNearSpawn(worldX, worldZ)) {
                             this.generateTree(x, y + 1, z, rng);
                         }
                     } else if (this.getBlock(x, y, z)?.id === BlockID.Empty) {
@@ -113,6 +137,9 @@ export class Chunk extends THREE.Group {
                 const worldX = this.positionInWorld.x * this.size.width + x;
                 const worldZ = this.positionInWorld.z * this.size.width + z;
 
+                // No clouds near spawn
+                if (this.isNearSpawn(worldX, worldZ)) continue;
+
                 const value = simplex.noise(
                     worldX / cloudScale,
                     worldZ / cloudScale
@@ -139,6 +166,9 @@ export class Chunk extends THREE.Group {
                         const worldX = this.positionInWorld.x * this.size.width + x;
                         const worldY = y;
                         const worldZ = this.positionInWorld.z * this.size.width + z;
+
+                        // No resource ores near spawn
+                        if (this.isNearSpawn(worldX, worldZ)) continue;
 
                         const value = simplex.noise3d(
                             worldX / blocks[res.id].scale.x,

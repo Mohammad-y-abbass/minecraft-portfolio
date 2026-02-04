@@ -26,7 +26,7 @@ export function createGUI(world: World, player: Player) {
     playerFolder.add(player, 'width', 0.1, 2, 0.1).name('Width');
     playerFolder.add(player, 'height', 0.5, 4, 0.1).name('Height');
     playerFolder.add(player, 'eyeHeight', 0.1, 4, 0.1).name('Eye Height');
-    playerFolder.add(player.boundsHelper, 'visible').name('Show Bounds');
+    // playerFolder.add(player.boundsHelper, 'visible').name('Show Bounds');
 
     const scaleFolder = gui.addFolder('Scale');
     resources.forEach(resource => {
