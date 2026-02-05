@@ -218,6 +218,13 @@ export class Chunk extends THREE.Group {
                             this.setBlockInstanceId(x, y, z, instanceId);
                             mesh.count++;
                         }
+
+                        // Add light for lamps
+                        if (blockId === BlockID.Lamp) {
+                            const light = new THREE.PointLight(0xffffaa, 5, 10);
+                            light.position.set(x + 0.5, y + 0.5, z + 0.5);
+                            this.add(light);
+                        }
                     }
                 }
             }

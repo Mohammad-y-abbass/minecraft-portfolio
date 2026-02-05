@@ -51,6 +51,7 @@ export const blocks = {
     },
     [BlockID.Leaves]: { name: "Leaves", color: 0x00ff00, materials: new THREE.MeshStandardMaterial({ map: textures.leaves, transparent: true, alphaTest: 0.5 }) },
     [BlockID.Cloud]: { name: "Cloud", color: 0xffffff, materials: new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 }) },
+    [BlockID.Lamp]: { name: "Lamp", color: 0xffff00, materials: new THREE.MeshStandardMaterial({ color: 0xffffaa, emissive: 0xffffaa, emissiveIntensity: 1 }) },
 } as const;
 
 export const resources = [

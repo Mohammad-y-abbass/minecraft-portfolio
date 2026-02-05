@@ -35,16 +35,68 @@ function spawnPortfolioObjects() {
   // Force initial chunk loading around player so ground height is ready for labels/posters
   world.update(player.position);
 
-  Object.entries(PORTFOLIO_DATA).forEach(([_, data]) => {
+  Object.entries(PORTFOLIO_DATA).forEach(([key, data]) => {
     const y = world.getGroundHeight(data.x, data.z);
 
     // Labels stay in scene permanently
     labelManager.addLabel(data.x, y + 4.5, data.z, data.title);
 
     // Posters stay in scene permanently
-    // Plane faces +Z (South) by default.
-    const posterRot = new Euler(0, 0, 0);
-    posterManager.addPoster(data.x, y + 1.8, data.z - 1.8, posterRot, data.body);
+    if (key === 'projects' && data.projects) {
+      const skyY = 30;
+      const posterWidth = 25;
+      const posterHeight = 15;
+
+      // 1. Far Left (Angled)
+      posterManager.addPoster(
+        data.x - 50, skyY, data.z - 5,
+        new Euler(0, Math.PI / 3, 0),
+        `${data.projects[2].title}\n\n${data.projects[2].desc}`,
+        posterWidth, posterHeight
+      );
+
+      // 2. Front Left
+      posterManager.addPoster(
+        data.x - 15, skyY, data.z - 25,
+        new Euler(0, 0, 0),
+        `${data.projects[0].title}\n\n${data.projects[0].desc}`,
+        posterWidth, posterHeight
+      );
+
+      // 3. Front Right
+      posterManager.addPoster(
+        data.x + 15, skyY, data.z - 25,
+        new Euler(0, 0, 0),
+        `${data.projects[1].title}\n\n${data.projects[1].desc}`,
+        posterWidth, posterHeight
+      );
+
+      // 4. Far Right (Angled)
+      posterManager.addPoster(
+        data.x + 50, skyY, data.z - 5,
+        new Euler(0, -Math.PI / 3, 0),
+        `${data.projects[3].title}\n\n${data.projects[3].desc}`,
+        posterWidth, posterHeight
+      );
+
+      // 5. Links Poster (Inside the cabin)
+      const linksText = `PROJECT LINKS\n\n` + data.projects.map(p => {
+        let text = `${p.title}:`;
+        if (p.code) text += `\n Code: ${p.code}`;
+        if (p.preview) text += `\n Preview: ${p.preview}`;
+        return text;
+      }).join('\n\n');
+      posterManager.addPoster(
+        data.x, y + 1.8, data.z - 1.8,
+        new Euler(0, 0, 0),
+        linksText,
+        4, 3
+      );
+    } else {
+      // Regular posters for other sections
+      const posterRot = new Euler(0, 0, 0);
+      posterManager.addPoster(data.x, y + 1.8, data.z - 1.8, posterRot, data.body);
+    }
   });
 }
 

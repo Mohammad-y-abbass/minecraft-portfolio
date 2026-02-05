@@ -33,7 +33,7 @@ export class World extends THREE.Group {
 
         for (let x = chunkX - this.renderDistance; x <= chunkX + this.renderDistance; x++) {
             for (let z = chunkZ - this.renderDistance; z <= chunkZ + this.renderDistance; z++) {
-                const key = `${x},${z}`;
+                const key = `${x},${z} `;
                 chunksToRemove.delete(key);
 
                 if (!this.chunks.has(key)) {
@@ -52,7 +52,7 @@ export class World extends THREE.Group {
     }
 
     loadChunk(x: number, z: number) {
-        const key = `${x},${z}`;
+        const key = `${x},${z} `;
         const rng = new RNG(this.params.seed);
         const chunk = new Chunk(x, z, this.size, this.params);
         chunk.generateTerrain(rng);
@@ -65,12 +65,13 @@ export class World extends THREE.Group {
         const chunkMinZ = z * this.size.width;
         const chunkMaxZ = (z + 1) * this.size.width;
 
-        Object.values(PORTFOLIO_DATA).forEach(data => {
+        Object.entries(PORTFOLIO_DATA).forEach(([_, data]) => {
             // Buffer of 5 blocks for safety
             if (data.x >= chunkMinX - 5 && data.x < chunkMaxX + 5 &&
                 data.z >= chunkMinZ - 5 && data.z < chunkMaxZ + 5) {
+
                 const y = chunk.getGroundHeight(data.x, data.z);
-                this.generator.generateCabin(data.x, y, data.z, 6, 6, 4, 'N', chunk);
+                this.generator.generateCabin(data.x, y, data.z, 6, 6, 4, 'N', chunk, false);
             }
         });
 
@@ -82,7 +83,7 @@ export class World extends THREE.Group {
     getBlock(x: number, y: number, z: number) {
         const chunkX = Math.floor(x / this.size.width);
         const chunkZ = Math.floor(z / this.size.width);
-        const key = `${chunkX},${chunkZ}`;
+        const key = `${chunkX},${chunkZ} `;
         const chunk = this.chunks.get(key);
 
         if (chunk) {
@@ -110,7 +111,7 @@ export class World extends THREE.Group {
     setBlock(x: number, y: number, z: number, id: number, updateMesh = true) {
         const chunkX = Math.floor(x / this.size.width);
         const chunkZ = Math.floor(z / this.size.width);
-        const key = `${chunkX},${chunkZ}`;
+        const key = `${chunkX},${chunkZ} `;
         const chunk = this.chunks.get(key);
 
         if (chunk) {
@@ -122,10 +123,10 @@ export class World extends THREE.Group {
                 chunk.generateMeshes();
 
                 // Handle neighboring chunks if on boundary
-                if (localX === 0) this.chunks.get(`${chunkX - 1},${chunkZ}`)?.generateMeshes();
-                if (localX === this.size.width - 1) this.chunks.get(`${chunkX + 1},${chunkZ}`)?.generateMeshes();
-                if (localZ === 0) this.chunks.get(`${chunkX},${chunkZ - 1}`)?.generateMeshes();
-                if (localZ === this.size.width - 1) this.chunks.get(`${chunkX},${chunkZ + 1}`)?.generateMeshes();
+                if (localX === 0) this.chunks.get(`${chunkX - 1},${chunkZ} `)?.generateMeshes();
+                if (localX === this.size.width - 1) this.chunks.get(`${chunkX + 1},${chunkZ} `)?.generateMeshes();
+                if (localZ === 0) this.chunks.get(`${chunkX},${chunkZ - 1} `)?.generateMeshes();
+                if (localZ === this.size.width - 1) this.chunks.get(`${chunkX},${chunkZ + 1} `)?.generateMeshes();
             }
         }
     }
