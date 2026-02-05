@@ -16,7 +16,8 @@ const renderer = createRenderer();
 
 
 const scene = new Scene();
-const world = new World({ width: 32, height: 32 });
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const world = new World({ width: 32, height: 32 }, isMobile);
 scene.add(world);
 
 const player = new Player(scene, world);

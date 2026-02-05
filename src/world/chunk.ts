@@ -11,12 +11,14 @@ export class Chunk extends THREE.Group {
     data: WorldData[][][];
     positionInWorld: { x: number; z: number };
     params: any;
+    isMobile: boolean;
 
-    constructor(x: number, z: number, size: { width: number; height: number }, params: any) {
+    constructor(x: number, z: number, size: { width: number; height: number }, params: any, isMobile: boolean = false) {
         super();
         this.positionInWorld = { x, z };
         this.size = size;
         this.params = params;
+        this.isMobile = isMobile;
         this.position.set(x * size.width, 0, z * size.width);
         this.data = [];
         this.initTerrainData();
@@ -83,8 +85,9 @@ export class Chunk extends THREE.Group {
                     } else if (y === height) {
                         this.setBlockId(x, y, z, BlockID.Grass);
 
+                        const treeProb = this.isMobile ? 0.005 : 0.02;
                         // Randomly grow a tree - only if NOT near spawn
-                        if (rng.random() < 0.02 && !this.isNearSpawn(worldX, worldZ)) {
+                        if (rng.random() < treeProb && !this.isNearSpawn(worldX, worldZ)) {
                             this.generateTree(x, y + 1, z, rng);
                         }
                     } else if (this.getBlock(x, y, z)?.id === BlockID.Empty) {
@@ -127,6 +130,9 @@ export class Chunk extends THREE.Group {
     }
 
     generateClouds(rng: RNG) {
+        // Skip clouds on mobile for performance
+        if (this.isMobile) return;
+
         const simplex = new SimplexNoise(rng);
         const cloudHeight = this.size.height - 6;
         const cloudScale = 20;
@@ -167,8 +173,8 @@ export class Chunk extends THREE.Group {
                         const worldY = y;
                         const worldZ = this.positionInWorld.z * this.size.width + z;
 
-                        // No resource ores near spawn
-                        if (this.isNearSpawn(worldX, worldZ)) continue;
+                        // No resource ores near spawn or on mobile
+                        if (this.isNearSpawn(worldX, worldZ) || this.isMobile) continue;
 
                         const value = simplex.noise3d(
                             worldX / blocks[res.id].scale.x,

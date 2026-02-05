@@ -18,10 +18,13 @@ export class World extends THREE.Group {
         }
     }
     generator: StructureGenerator;
+    isMobile: boolean;
 
-    constructor({ width = 32, height = 32 }: WorldSize) {
+    constructor({ width = 32, height = 32 }: WorldSize, isMobile: boolean = false) {
         super();
         this.size = { width, height }; // width is chunk size
+        this.isMobile = isMobile;
+        if (this.isMobile) this.renderDistance = 1;
         this.generator = new StructureGenerator(this);
     }
 
@@ -54,7 +57,7 @@ export class World extends THREE.Group {
     loadChunk(x: number, z: number) {
         const key = `${x},${z} `;
         const rng = new RNG(this.params.seed);
-        const chunk = new Chunk(x, z, this.size, this.params);
+        const chunk = new Chunk(x, z, this.size, this.params, this.isMobile);
         chunk.generateTerrain(rng);
         chunk.generateResources(rng);
         chunk.generateClouds(rng);
