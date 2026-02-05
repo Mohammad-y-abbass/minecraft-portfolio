@@ -85,7 +85,7 @@ export class Chunk extends THREE.Group {
                     } else if (y === height) {
                         this.setBlockId(x, y, z, BlockID.Grass);
 
-                        const treeProb = this.isMobile ? 0.005 : 0.02;
+                        const treeProb = this.isMobile ? 0.002 : 0.005;
                         // Randomly grow a tree - only if NOT near spawn
                         if (rng.random() < treeProb && !this.isNearSpawn(worldX, worldZ)) {
                             this.generateTree(x, y + 1, z, rng);
@@ -136,7 +136,7 @@ export class Chunk extends THREE.Group {
         const simplex = new SimplexNoise(rng);
         const cloudHeight = this.size.height - 6;
         const cloudScale = 20;
-        const cloudThreshold = 0.5;
+        const cloudThreshold = 0.6;
 
         for (let x = 0; x < this.size.width; x++) {
             for (let z = 0; z < this.size.width; z++) {
