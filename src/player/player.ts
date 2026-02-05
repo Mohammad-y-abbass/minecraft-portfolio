@@ -103,12 +103,23 @@ export class Player {
         );
 
         document.addEventListener("click", (event) => {
+            if (this.isTouchDevice) {
+                this.onMouseDown(event);
+                return;
+            }
+
             if (!this.controls.isLocked) {
                 this.controls.lock();
             } else {
                 this.onMouseDown(event);
             }
         });
+
+        // Sync initial rotations for touch devices
+        if (this.isTouchDevice) {
+            this.rotationY = this.camera.rotation.y;
+            this.rotationX = this.camera.rotation.x;
+        }
 
         // Disable context menu to allow right-click block interaction
         document.addEventListener("contextmenu", (event) => event.preventDefault());

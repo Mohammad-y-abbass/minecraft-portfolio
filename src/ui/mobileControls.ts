@@ -98,7 +98,11 @@ export function setupMobileControls(player: Player) {
         player.moveRight = tx > deadzone;
     };
 
+    // Prevent browser default behavior like scrolling/refreshing
+    document.body.style.touchAction = 'none';
+
     window.addEventListener('touchmove', (e: TouchEvent) => {
+        e.preventDefault(); // Stop scrolling/zoom
         for (let i = 0; i < e.touches.length; i++) {
             const touch = e.touches[i];
 
@@ -108,8 +112,9 @@ export function setupMobileControls(player: Player) {
                 const movementX = touch.clientX - (lastLookX ?? touch.clientX);
                 const movementY = touch.clientY - (lastLookY ?? touch.clientY);
 
-                player.rotationY -= movementX * player.lookSensitivity;
-                player.rotationX -= movementY * player.lookSensitivity;
+                // Increased sensitivity for mobile
+                player.rotationY -= movementX * (player.lookSensitivity * 1.5);
+                player.rotationX -= movementY * (player.lookSensitivity * 1.5);
                 player.rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotationX));
 
                 lastLookX = touch.clientX;
